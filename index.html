@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ثيم القائمة</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #ffffff; --text: #1d2330; --muted: #6b7280;
+    --line: #e3e6eb; --accent: #7c4dff; --accent-text: #ffffff;
+    --danger: #dc2626; --warn-bg: #fff7e6; --warn: #9a5b00;
+    --ok-bg: #e8f7ee; --ok: #16794a; --err-bg: #fdecec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c; --card: #1e232b; --text: #e7eaf0; --muted: #9aa3b2;
+      --line: #2e3540; --accent: #a78bfa; --accent-text: #14171c; --danger: #f26b6b;
+      --warn-bg: #3a2e14; --warn: #f5c46b; --ok-bg: #163324; --ok: #6fdc9f; --err-bg: #3a1c1c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 "Segoe UI", Tahoma, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 18px 16px 40px; }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+  h1 { font-size: 20px; margin: 0; }
+  h2 { font-size: 14px; margin: 0 0 10px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 470px; gap: 16px; align-items: start; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+  .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .preset { display: flex; align-items: center; gap: 8px; padding: 8px; text-align: start; font-size: 13px; }
+  .preset.active { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .sw { display: flex; flex: none; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+  .sw i { width: 12px; height: 26px; display: block; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; }
+  .field { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 32px; }
+  .field > span { color: var(--muted); font-size: 13px; }
+  .color { display: flex; align-items: center; gap: 6px; direction: ltr; }
+  .color input[type=color] { width: 34px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
+  .color input[type=text] { width: 84px; font-family: Consolas, monospace; text-transform: uppercase; }
+  .range { display: flex; align-items: center; gap: 8px; direction: ltr; }
+  .range input { width: 120px; accent-color: var(--accent); }
+  .range output { min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+  input[type=text], select {
+    font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 7px; padding: 4px 8px;
+  }
+  select { min-width: 130px; }
+  input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
+  button {
+    font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--text);
+    border-radius: 8px; padding: 7px 14px; cursor: pointer;
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+  button:disabled { opacity: .5; cursor: default; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .msg { border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 14px; }
+  .msg.ok { background: var(--ok-bg); color: var(--ok); }
+  .msg.err { background: var(--err-bg); color: var(--danger); }
+  .msg.warn { background: var(--warn-bg); color: var(--warn); }
+  .hint { font-size: 12px; color: var(--muted); }
+  .file { font-size: 12px; color: var(--muted); direction: ltr; text-align: left; word-break: break-all; margin-top: 8px; }
+  .dirty { color: var(--warn); font-size: 13px; }
+  .hrow { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .hrow:last-child { border-bottom: 0; }
+  .hrow .pat { flex: 1; unicode-bidi: plaintext; text-align: start; font-family: Consolas, "Segoe UI", monospace; }
+  .hrow.off .pat { color: var(--muted); text-decoration: line-through; }
+  .hrow button { padding: 2px 10px; font-size: 13px; }
+  [hidden] { display: none !important; }
+
+  /* ---------- المعاينة ---------- */
+  .side { position: sticky; top: 12px; }
+  .stage {
+    border-radius: 12px; padding: 26px 18px; min-height: 470px; direction: ltr; overflow: hidden;
+    background: radial-gradient(circle at 20% 20%, #7aa2f7 0, transparent 45%),
+                radial-gradient(circle at 85% 70%, #f7768e 0, transparent 40%),
+                linear-gradient(135deg, #2a2f4a, #55406e 60%, #1f6f78);
+    display: flex; gap: 4px; align-items: flex-start;
+  }
+  .pv {
+    font-family: var(--font); font-size: var(--fs); font-weight: var(--fw); font-style: var(--fi);
+    background: var(--bgc); color: var(--t); border: var(--bs) solid var(--bc); border-radius: var(--br);
+    box-shadow: 0 var(--shs) calc(var(--shs) * 2) var(--shc); backdrop-filter: var(--fx);
+    padding: 3px 0; min-width: 210px; flex: none;
+  }
+  .pv .it {
+    display: flex; align-items: center; gap: 10px; border-radius: var(--ir); cursor: default;
+    padding: var(--pt) var(--pr) var(--pb) var(--pl); margin: var(--mt) var(--mr) var(--mb) var(--ml);
+    white-space: nowrap; background: var(--ib);
+  }
+  .pv .it.sel, .pv .it:not(.dis):hover { background: var(--is); color: var(--ts); }
+  .pv .it.sel .sym, .pv .it:not(.dis):hover .sym { color: var(--ss); }
+  .pv .it.dis { color: var(--td); }
+  .pv .it.dis.sel { background: var(--isd); }
+  .pv .it.dis svg { opacity: .5; }
+  .pv .ic { width: 1.1em; height: 1.1em; flex: none; display: flex; color: var(--i1); }
+  .pv .ic svg { width: 100%; height: 100%; }
+  .pv .ic .ac { stroke: var(--i2); }
+  .pv .ic.noimg { visibility: hidden; }
+  .pv .lbl { flex: 1; }
+  .pv .sym { color: var(--sn); font-size: .8em; }
+  .pv .it.dis .sym { color: var(--sd); }
+  .pv .sep { height: var(--sps); background: var(--spc); margin: 3px 0; }
+  .pv.sub { margin-top: 2px; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .side { position: static; } .grid, .presets { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <h1 data-t="title">ثيم القائمة</h1>
+    <div class="actions">
+      <span id="dirty" class="dirty" data-t="dirty" hidden>تغييرات غير محفوظة</span>
+      <button id="lang" type="button">English</button>
+    </div>
+  </div>
+  <div id="msg" class="msg" hidden></div>
+  <div id="unlinked" class="msg warn" data-t="unlinked" hidden>ملف الثيم غير مربوط بـ shell.nss، فلن يظهر أي تغيير في القائمة.</div>
+
+  <div class="layout">
+    <div>
+      <div class="card">
+        <h2 data-t="presets">ثيمات جاهزة</h2>
+        <div id="presets" class="presets"></div>
+      </div>
+
+      <div class="card"><h2 data-t="g_bg">الخلفية</h2><div class="grid">
+        <label class="field"><span data-t="color">اللون</span><div class="color" data-k="background.color"></div></label>
+        <label class="field"><span data-t="opacity">الشفافية</span><div class="range" data-k="background.opacity" data-min="0" data-max="100"></div></label>
+        <label class="field"><span data-t="effect">التأثير</span>
+          <select data-k="background.effect" data-num>
+            <option value="0" data-t="fx0">بدون</option><option value="1" data-t="fx1">شفاف</option>
+            <option value="2" data-t="fx2">ضبابي</option><option value="3" data-t="fx3">أكريليك</option>
+          </select></label>
+      </div></div>
+
+      <div class="card"><h2 data-t="g_text">النص</h2><div class="grid">
+        <label class="field"><span data-t="normal">عادي</span><div class="color" data-k="item.text.normal"></div></label>
+        <label class="field"><span data-t="hover">عند التحديد</span><div class="color" data-k="item.text.select"></div></label>
+        <label class="field"><span data-t="disabled">معطّل</span><div class="color" data-k="item.text.normal-disabled" data-also="item.text.select-disabled"></div></label>
+      </div></div>
+
+      <div class="card"><h2 data-t="g_sel">العنصر المحدد</h2><div class="grid">
+        <label class="field"><span data-t="selbg">خلفية التحديد</span><div class="color" data-k="item.back.select"></div></label>
+        <label class="field"><span data-t="seldis">تحديد عنصر معطّل</span><div class="color" data-k="item.back.select-disabled"></div></label>
+        <label class="field"><span data-t="iradius">انحناء العنصر</span>
+          <select data-k="item.radius" data-num class="radius"></select></label>
+      </div></div>
+
+      <div class="card"><h2 data-t="g_border">الإطار والفاصل</h2><div class="grid">
+        <label class="field"><span data-t="benabled">إظهار الإطار</span><input type="checkbox" data-k="border.enabled"></label>
+        <label class="field"><span data-t="bcolor">لون الإطار</span><div class="color" data-k="border.color"></div></label>
+        <label class="field"><span data-t="bsize">سمك الإطار</span><div class="range" data-k="border.size" data-min="0" data-max="5"></div></label>
+        <label class="field"><span data-t="bradius">انحناء القائمة</span>
+          <select data-k="border.radius" data-num class="radius"></select></label>
+        <label class="field"><span data-t="scolor">لون الفاصل</span><div class="color" data-k="separator.color"></div></label>
+        <label class="field"><span data-t="ssize">سمك الفاصل</span><div class="range" data-k="separator.size" data-min="0" data-max="4"></div></label>
+      </div></div>
+
+      <div class="card"><h2 data-t="g_icons">الأيقونات والرموز</h2><div class="grid">
+        <label class="field"><span data-t="i1">لون الأيقونات</span><div class="color" data-k="image.color.0"></div></label>
+        <label class="field"><span data-t="i2">اللون الثانوي</span><div class="color" data-k="image.color.1"></div></label>
+        <label class="field"><span data-t="sym">الأسهم والعلامات</span><div class="color" data-k="symbol.normal"></div></label>
+        <label class="field"><span data-t="symsel">الأسهم عند التحديد</span><div class="color" data-k="symbol.select"></div></label>
+        <label class="field"><span data-t="ienabled">إظهار الأيقونات</span><input type="checkbox" data-k="image.enabled"></label>
+      </div></div>
+
+      <div class="card"><h2 data-t="g_font">الخط والمسافات</h2><div class="grid">
+        <label class="field"><span data-t="font">الخط</span>
+          <input type="text" list="fonts" data-k="font.name" style="width:180px"></label>
+        <label class="field"><span data-t="fsize">الحجم</span><div class="range" data-k="font.size" data-min="10" data-max="30"></div></label>
+        <label class="field"><span data-t="fweight">السماكة</span><div class="range" data-k="font.weight" data-min="1" data-max="9"></div></label>
+        <label class="field"><span data-t="padv">ارتفاع العنصر</span><div class="range" data-k="item.padding.top" data-also="item.padding.bottom" data-min="0" data-max="12"></div></label>
+        <label class="field"><span data-t="padh">الهامش الجانبي</span><div class="range" data-k="item.padding.left" data-also="item.padding.right" data-min="0" data-max="30"></div></label>
+        <label class="field"><span data-t="marh">بُعد التحديد عن الحافة</span><div class="range" data-k="item.margin.left" data-also="item.margin.right" data-min="0" data-max="12"></div></label>
+      </div>
+      <datalist id="fonts">
+        <option>Segoe UI Variable Text</option><option>Segoe UI Variable Display</option><option>Segoe UI</option>
+        <option>Cascadia Code</option><option>Tahoma</option><option>Arial</option><option>Calibri</option>
+      </datalist></div>
+
+      <div class="card"><h2 data-t="g_shadow">الظل</h2><div class="grid">
+        <label class="field"><span data-t="shenabled">إظهار الظل</span><input type="checkbox" data-k="shadow.enabled"></label>
+        <label class="field"><span data-t="color">اللون</span><div class="color" data-k="shadow.color"></div></label>
+        <label class="field"><span data-t="shsize">الحجم</span><div class="range" data-k="shadow.size" data-min="0" data-max="30"></div></label>
+        <label class="field"><span data-t="opacity">الشفافية</span><div class="range" data-k="shadow.opacity" data-min="0" data-max="100"></div></label>
+      </div></div>
+
+      <div class="card" id="hidecard">
+        <h2 data-t="g_hide">العناصر المخفية من القائمة</h2>
+        <p class="hint" data-t="hidehint">اكتب جزءًا من اسم العنصر كما يظهر في القائمة، بين نجمتين: *VLC*. ألغِ العلامة لإظهار العنصر مرة أخرى.</p>
+        <div id="unlinkedhide" class="msg warn" data-t="unlinkedhide" hidden>ملف العناصر المخفية غير مربوط بـ shell.nss.</div>
+        <div id="hidelist"></div>
+        <div class="actions" style="margin-top:10px">
+          <input type="text" id="newhide" placeholder="*Visual Studio*" style="flex:1;min-width:160px" spellcheck="false">
+          <button type="button" id="addhide" data-t="addhide">إضافة</button>
+          <button type="button" id="savehide" class="primary" data-t="savehide">حفظ وتطبيق</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="card">
+        <h2 data-t="preview">معاينة</h2>
+        <div class="stage" id="stage"></div>
+        <p class="hint" data-t="pvhint">المعاينة تقريبية؛ الشكل النهائي يظهر في قائمة الزر الأيمن بعد الحفظ.</p>
+        <div class="actions">
+          <button id="save" class="primary" type="button" data-t="save">حفظ وتطبيق</button>
+          <button id="undo" type="button" data-t="undo">تراجع عن آخر حفظ</button>
+          <button id="restart" type="button" data-t="restart">إعادة تشغيل Explorer</button>
+        </div>
+        <p class="hint" data-t="restarthint">الحفظ يعيد تشغيل Explorer تلقائيًا لأن Shell لا يقرأ الإعدادات إلا عند تشغيله، فيختفي شريط المهام لثوانٍ.</p>
+        <div class="file" id="file"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="/presets.js"></script>
+<script>
+const TOKEN = "__TOKEN__";
+const T = {
+  ar: {},
+  en: {
+    title: "Menu Theme", dirty: "Unsaved changes", presets: "Ready themes",
+    unlinked: "The theme file is not linked in shell.nss, so changes won't show in the menu.",
+    g_bg: "Background", color: "Color", opacity: "Opacity", effect: "Effect",
+    fx0: "None", fx1: "Transparent", fx2: "Blur", fx3: "Acrylic",
+    g_text: "Text", normal: "Normal", hover: "Selected", disabled: "Disabled",
+    g_sel: "Selected item", selbg: "Selection background", seldis: "Disabled selection", iradius: "Item corners",
+    g_border: "Border & separator", benabled: "Show border", bcolor: "Border color", bsize: "Border size",
+    bradius: "Menu corners", scolor: "Separator color", ssize: "Separator size",
+    g_icons: "Icons & symbols", i1: "Icon color", i2: "Secondary color", sym: "Arrows & marks",
+    symsel: "Arrows when selected", ienabled: "Show icons",
+    g_font: "Font & spacing", font: "Font", fsize: "Size", fweight: "Weight", padv: "Item height",
+    padh: "Side padding", marh: "Selection inset",
+    g_shadow: "Shadow", shenabled: "Show shadow", shsize: "Size",
+    preview: "Preview", pvhint: "Approximate preview; the real look shows in the right-click menu after saving.",
+    save: "Save & apply", undo: "Undo last save", restart: "Restart Explorer",
+    restarthint: "Saving restarts Explorer automatically, because Shell only reads its settings when Explorer starts. The taskbar disappears for a few seconds.",
+    saved: "Saved and applied. Right-click anywhere to see it.", undone: "Previous version restored and applied.",
+    restarting: "Applying… restarting Explorer", badfile: "Shell rejected the theme file, so the previous version was restored: ",
+    otherr: "Applied, but Shell reported an error in another file: ", applied: "Explorer restarted.",
+    g_hide: "Hidden menu items", hidehint: "Type part of the item's name as it appears in the menu, between stars: *VLC*. Untick to show the item again.",
+    unlinkedhide: "The hidden-items file is not linked in shell.nss.", addhide: "Add", savehide: "Save & apply",
+    hidden: "Hidden", remove: "Remove", hidesaved: "Hidden items saved and applied.", nohide: "No hidden items yet.",
+    badpat: "Write the text between stars, without double quotes, e.g. *VLC*",
+    r0: "None", r1: "Small", r2: "Medium", r3: "Large", r4: "Full",
+  },
+};
+const AR = { r0: "بدون", r1: "صغير", r2: "متوسط", r3: "كبير", r4: "كامل",
+  saved: "تم الحفظ والتطبيق. اضغط بالزر الأيمن في أي مكان لترى الشكل الجديد.", undone: "رجعت النسخة السابقة وطُبّقت.",
+  restarting: "جارٍ التطبيق… يُعاد تشغيل Explorer", badfile: "رفض Shell ملف الثيم، فأرجعت النسخة السابقة: ",
+  otherr: "طُبّق، لكن Shell سجّل خطأ في ملف آخر: ", applied: "أُعيد تشغيل Explorer.",
+  hidden: "مخفي", remove: "حذف", hidesaved: "حُفظت العناصر المخفية وطُبّقت.", nohide: "لا توجد عناصر مخفية بعد.",
+  badpat: "اكتب النص بين نجمتين ودون علامات تنصيص، مثل *VLC*" };
+
+let lang = "ar";
+try { lang = localStorage.getItem("lang") || "ar"; } catch (e) {}
+const tr = (k) => (lang === "en" ? T.en[k] : AR[k]) || k;
+
+let theme = {}, savedJson = "";
+
+// ---------- مسارات القيم ----------
+function getK(path) {
+  return path.split(".").reduce((o, k) => (o == null ? undefined : o[k]), theme);
+}
+function setK(path, v) {
+  const ks = path.split("."); let o = theme;
+  ks.slice(0, -1).forEach((k, i) => {
+    if (o[k] == null) o[k] = /^\d+$/.test(ks[i + 1]) ? [] : {};
+    o = o[k];
+  });
+  o[ks[ks.length - 1]] = v;
+}
+
+// ---------- بناء عناصر التحكم ----------
+const isHex = (s) => /^#[0-9A-Fa-f]{6}$/.test(s);
+function setAll(el, v) {
+  setK(el.dataset.k, v);
+  if (el.dataset.also) setK(el.dataset.also, v);
+  changed();
+}
+document.querySelectorAll(".color").forEach((box) => {
+  box.innerHTML = '<input type="color"><input type="text" maxlength="7" spellcheck="false">';
+  const [pick, hex] = box.children;
+  pick.oninput = () => { hex.value = pick.value.toUpperCase(); setAll(box, hex.value); };
+  hex.oninput = () => { if (isHex(hex.value)) { pick.value = hex.value; setAll(box, hex.value.toUpperCase()); } };
+});
+document.querySelectorAll(".range").forEach((box) => {
+  box.innerHTML = `<input type="range" min="${box.dataset.min}" max="${box.dataset.max}" step="1"><output></output>`;
+  const [r, out] = box.children;
+  r.oninput = () => { out.textContent = String(r.value); setAll(box, Number(r.value)); };
+});
+document.querySelectorAll("select.radius").forEach((s) => {
+  s.innerHTML = [0, 1, 2, 3, 4].map((n) => `<option value="${n}" data-t="r${n}"></option>`).join("");
+});
+document.querySelectorAll("select[data-k]").forEach((s) => (s.onchange = () => setAll(s, Number(s.value))));
+document.querySelectorAll("input[type=checkbox][data-k]").forEach((c) => (c.onchange = () => setAll(c, c.checked)));
+document.querySelectorAll("input[type=text][data-k]").forEach((i) => (i.oninput = () => setAll(i, i.value.trim())));
+
+function fillControls() {
+  document.querySelectorAll(".color").forEach((box) => {
+    const v = String(getK(box.dataset.k) || "#000000").slice(0, 7).toUpperCase();
+    box.children[0].value = isHex(v) ? v : "#000000"; box.children[1].value = v;
+  });
+  document.querySelectorAll(".range").forEach((box) => {
+    const v = getK(box.dataset.k) ?? Number(box.dataset.min);
+    box.children[0].value = v; box.children[1].textContent = String(v);
+  });
+  document.querySelectorAll("select[data-k]").forEach((s) => (s.value = String(getK(s.dataset.k) ?? 0)));
+  document.querySelectorAll("input[type=checkbox][data-k]").forEach((c) => (c.checked = getK(c.dataset.k) !== false));
+  document.querySelectorAll("input[type=text][data-k]").forEach((i) => (i.value = getK(i.dataset.k) || ""));
+}
+
+// ---------- الثيمات الجاهزة ----------
+function renderPresets() {
+  const box = document.getElementById("presets");
+  box.innerHTML = "";
+  PRESETS.forEach((p) => {
+    const t = p.theme, b = document.createElement("button");
+    b.type = "button"; b.className = "preset" + (theme.name === p.id ? " active" : "");
+    b.innerHTML = `<span class="sw">${[t.background.color, t.item.back.select, t.border.color, t.item.text.normal]
+      .map((c) => `<i style="background:${c}"></i>`).join("")}</span><span>${lang === "en" ? p.en : p.ar}</span>`;
+    b.onclick = () => {
+      theme = JSON.parse(JSON.stringify(t));
+      fillControls(); changed();
+    };
+    box.appendChild(b);
+  });
+}
+
+// ---------- المعاينة ----------
+const ICONS = {
+  view: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5" class="ac"/>',
+  sort: '<path d="M7 4v16M3 8l4-4 4 4"/><path d="M17 20V4M13 16l4 4 4-4" class="ac"/>',
+  refresh: '<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/>',
+  more: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 14l8-8M13 6h5v5" class="ac"/>',
+  dev: '<path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/><path d="M13 5l-2 14" class="ac"/>',
+  paste: '<rect x="6" y="5" width="12" height="16" rx="2"/><path d="M9 3h6v4H9z"/>',
+  term: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10l3 2-3 2M12 15h5" class="ac"/>',
+  new: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  display: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="18" cy="17" r="3" class="ac"/>',
+  brush: '<path d="M14 4l6 6-8 8H6v-6z"/><path d="M4 20l2-2" class="ac"/>',
+  large: '<rect x="4" y="5" width="16" height="11" rx="2"/><path d="M3 19h18"/>',
+  small: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  arrange: '<rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 12h6"/>',
+};
+const MAIN = [
+  ["view", "View", ">", "sel"], ["sort", "Sort by", ">"], ["refresh", "Refresh"], ["more", "More options", ">"],
+  ["dev", "Develop", ">"], "-", ["paste", "Paste", "", "dis"], ["term", "Open in Terminal"], "-",
+  ["new", "New", ">"], "-", ["display", "Display settings"], ["brush", "Personalize"],
+];
+const SUB = [
+  ["large", "Large icons"], [null, "Medium icons", "●"], ["small", "Small icons", "", "sel"], "-",
+  ["arrange", "Auto arrange icons", "", "dis"], ["arrange", "Align icons to grid", "", "dis"],
+];
+function menuHtml(items, cls) {
+  return `<div class="pv ${cls}">` + items.map((it) => {
+    if (it === "-") return '<div class="sep"></div>';
+    const [ic, label, sym, st] = it;
+    const svg = ic ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[ic]}</svg>` : "";
+    const symHtml = sym === ">" ? "›" : sym === "●" ? "" : "";
+    const lead = sym === "●" ? '<span class="ic sym" style="justify-content:center;align-items:center;font-size:.6em">●</span>'
+                             : `<span class="ic${ic ? "" : " noimg"}">${svg}</span>`;
+    return `<div class="it ${st || ""}">${lead}<span class="lbl">${label}</span><span class="sym">${symHtml}</span></div>`;
+  }).join("") + "</div>";
+}
+function hexA(hex, op) {
+  const a = Math.round(Math.max(0, Math.min(100, op ?? 100)) * 2.55).toString(16).padStart(2, "0");
+  return String(hex || "#000000").slice(0, 7) + a;
+}
+const RAD_ITEM = [0, 3, 5, 8, 12], RAD_MENU = [0, 4, 8, 11, 16];
+function renderPreview() {
+  const g = (p, d) => getK(p) ?? d;
+  const st = document.getElementById("stage");
+  const s = st.style;
+  const fx = Number(g("background.effect", 0));
+  const op = fx === 1 ? Math.min(g("background.opacity", 100), 70) : fx >= 2 ? Math.min(g("background.opacity", 100), 82) : g("background.opacity", 100);
+  const vars = {
+    "--font": `"${g("font.name", "Segoe UI")}", "Segoe UI", sans-serif`,
+    "--fs": g("font.size", 16) * 0.8 + "px", "--fw": g("font.weight", 4) * 100, "--fi": g("font.italic", 0) ? "italic" : "normal",
+    "--bgc": hexA(g("background.color"), op), "--fx": fx >= 2 ? "blur(16px) saturate(1.3)" : "none",
+    "--t": g("item.text.normal"), "--ts": g("item.text.select", g("item.text.normal")), "--td": g("item.text.normal-disabled"),
+    "--ib": g("item.back.normal") && fx === 0 ? hexA(g("item.back.normal"), g("item.opacity", 100)) : "transparent",
+    "--is": hexA(g("item.back.select"), g("item.opacity", 100)), "--isd": g("item.back.select-disabled", "transparent"),
+    "--ir": RAD_ITEM[g("item.radius", 2)] + "px", "--br": RAD_MENU[g("border.radius", 2)] + "px",
+    "--bs": (g("border.enabled", true) ? g("border.size", 1) : 0) + "px", "--bc": hexA(g("border.color"), g("border.opacity", 100)),
+    "--shs": (g("shadow.enabled", true) ? g("shadow.size", 5) : 0) + "px", "--shc": hexA(g("shadow.color", "#000000"), Math.min(100, g("shadow.opacity", 20) * 2.5)),
+    "--sps": g("separator.size", 1) + "px", "--spc": g("separator.color"),
+    "--sn": g("symbol.normal"), "--ss": g("symbol.select", g("symbol.normal")), "--sd": g("symbol.normal-disabled", g("item.text.normal-disabled")),
+    "--i1": g("image.color.0", g("item.text.normal")), "--i2": g("image.color.1", g("image.color.0")),
+    "--pt": g("item.padding.top", 2) + 2 + "px", "--pb": g("item.padding.bottom", 2) + 2 + "px",
+    "--pl": g("item.padding.left", 8) + "px", "--pr": g("item.padding.right", 8) + "px",
+    "--mt": g("item.margin.top", 1) + "px", "--mb": g("item.margin.bottom", 1) + "px",
+    "--ml": g("item.margin.left", 4) + "px", "--mr": g("item.margin.right", 4) + "px",
+  };
+  const grad = getK("background.gradient");
+  if (grad && grad.enabled !== false && Array.isArray(grad.stop) && grad.stop.length) {
+    const l = grad.linear || [0, 0, 0, 100];
+    const deg = (Math.atan2(l[3] - l[1], l[2] - l[0]) * 180 / Math.PI + 90).toFixed(0);
+    vars["--bgc"] = `linear-gradient(${deg}deg, ${grad.stop.map((st) => `${st[1]} ${Number(st[0]) * 100}%`).join(", ")})`;
+  }
+  Object.entries(vars).forEach(([k, v]) => s.setProperty(k, String(v)));
+  st.innerHTML = menuHtml(MAIN, "") + menuHtml(SUB, "sub");
+  if (g("image.enabled", true) === false) st.querySelectorAll(".pv .ic:not(.sym)").forEach((e) => (e.style.visibility = "hidden"));
+}
+
+// ---------- الحالة ----------
+function changed() {
+  renderPreview();
+  document.getElementById("dirty").hidden = JSON.stringify(theme) === savedJson;
+  document.querySelectorAll(".preset").forEach((b, i) => b.classList.toggle("active", PRESETS[i].id === theme.name));
+}
+function msg(text, kind) {
+  const m = document.getElementById("msg");
+  m.textContent = text; m.className = "msg " + (kind || "ok"); m.hidden = !text;
+}
+async function api(path, body) {
+  const opt = { method: body === undefined ? "GET" : "POST", headers: { "X-Token": TOKEN, "X-Lang": lang } };
+  if (body !== undefined) { opt.body = JSON.stringify(body); opt.headers["Content-Type"] = "application/json"; }
+  return (await fetch(path, opt)).json();
+}
+function applyLang() {
+  document.documentElement.lang = lang; document.documentElement.dir = lang === "en" ? "ltr" : "rtl";
+  document.querySelectorAll("[data-t]").forEach((el) => {
+    if (!el.dataset.ar) el.dataset.ar = el.textContent;
+    el.textContent = lang === "en" ? (T.en[el.dataset.t] || el.dataset.ar) : (AR[el.dataset.t] || el.dataset.ar);
+  });
+  document.title = lang === "en" ? "Menu Theme" : "ثيم القائمة";
+  document.getElementById("lang").textContent = lang === "en" ? "العربية" : "English";
+  renderPresets();
+}
+document.getElementById("lang").onclick = () => {
+  lang = lang === "en" ? "ar" : "en";
+  try { localStorage.setItem("lang", lang); } catch (e) {}
+  applyLang();
+};
+
+async function load() {
+  const r = await api("/api/theme");
+  if (!r.ok) return msg(r.error, "err");
+  theme = r.theme; savedJson = JSON.stringify(theme);
+  document.getElementById("unlinked").hidden = r.linked;
+  document.getElementById("file").textContent = r.file;
+  fillControls(); renderPresets(); changed();
+}
+
+// كل حفظ يعيد تشغيل Explorer وينتظر نتيجة السجل، فنعطّل الأزرار حتى ينتهي
+async function busy(fn) {
+  const btns = document.querySelectorAll("button");
+  btns.forEach((b) => (b.disabled = true));
+  msg(tr("restarting"), "warn");
+  try { await fn(); } finally { btns.forEach((b) => (b.disabled = false)); }
+}
+function report(r, okText) {
+  if (!r.ok) return msg(r.error, "err");
+  if (r.reverted) return msg(tr("badfile") + r.errors[0], "err");
+  if (r.errors && r.errors.length) return msg(tr("otherr") + r.errors[0], "warn");
+  msg(okText, "ok");
+}
+
+document.getElementById("save").onclick = () => busy(async () => {
+  const r = await api("/api/save", { theme });
+  if (r.ok) { theme = r.theme; savedJson = JSON.stringify(theme); fillControls(); changed(); }
+  report(r, tr("saved"));
+});
+document.getElementById("undo").onclick = () => busy(async () => {
+  const r = await api("/api/undo", {});
+  if (r.ok) { theme = r.theme; savedJson = JSON.stringify(theme); fillControls(); changed(); }
+  report(r, tr("undone"));
+});
+document.getElementById("restart").onclick = () => busy(async () => {
+  report(await api("/api/restart", {}), tr("applied"));
+});
+
+// ---------- العناصر المخفية ----------
+let hideItems = [];
+function renderHide() {
+  const box = document.getElementById("hidelist");
+  box.innerHTML = hideItems.length ? "" : `<p class="hint">${tr("nohide")}</p>`;
+  hideItems.forEach((it, i) => {
+    const row = document.createElement("div");
+    row.className = "hrow" + (it.hidden ? "" : " off");
+    row.innerHTML = `<label class="actions" style="gap:6px"><input type="checkbox" ${it.hidden ? "checked" : ""}><span class="hint">${tr("hidden")}</span></label>
+      <span class="pat"></span><button type="button">${tr("remove")}</button>`;
+    row.querySelector(".pat").textContent = it.find || "id." + it.id;
+    row.querySelector("input").onchange = (e) => { it.hidden = e.target.checked; renderHide(); };
+    row.querySelector("button").onclick = () => { hideItems.splice(i, 1); renderHide(); };
+    box.appendChild(row);
+  });
+}
+document.getElementById("addhide").onclick = () => {
+  const inp = document.getElementById("newhide");
+  const v = inp.value.trim();
+  if (!v || v.includes('"')) return msg(tr("badpat"), "err");
+  hideItems.push({ find: v.includes("*") ? v : `*${v}*`, hidden: true });
+  inp.value = ""; renderHide();
+};
+document.getElementById("newhide").onkeydown = (e) => { if (e.key === "Enter") document.getElementById("addhide").click(); };
+document.getElementById("savehide").onclick = () => busy(async () => {
+  const r = await api("/api/hide/save", { items: hideItems });
+  if (r.ok) { hideItems = r.items; renderHide(); }
+  report(r, tr("hidesaved"));
+});
+async function loadHide() {
+  const r = await api("/api/hide");
+  if (!r.ok) return msg(r.error, "err");
+  hideItems = r.items; renderHide();
+  document.getElementById("unlinkedhide").hidden = r.linked;
+}
+
+setInterval(() => api("/api/ping").catch(() => {}), 2000);
+applyLang();
+load();
+loadHide();
+</script>
+</body>
+</html>
