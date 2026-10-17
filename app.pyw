@@ -19,6 +19,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import theme_file  # noqa: E402
 import hide_file  # noqa: E402
+import items_file  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TOKEN = secrets.token_hex(16)
@@ -63,6 +64,9 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == "/api/hide" and self._allowed():
             self._run(lambda d: {"items": hide_file.load(), "linked": hide_file.is_linked(),
                                  "file": hide_file.HIDE_FILE})
+        elif self.path == "/api/items" and self._allowed():
+            self._run(lambda d: {"items": items_file.load(), "linked": items_file.is_linked(),
+                                 "file": items_file.ITEMS_FILE})
         elif self.path.startswith("/api/errors?since=") and self._allowed():
             since = float(self.path.split("=", 1)[1] or 0)
             self._json(200, {"ok": True, "errors": theme_file.recent_errors(since)})
@@ -80,6 +84,7 @@ class Handler(BaseHTTPRequestHandler):
             "/api/undo": lambda d: {"theme": theme_file.undo(), "errors": theme_file.apply()},
             "/api/restart": lambda d: {"errors": theme_file.apply()},
             "/api/hide/save": lambda d: {"items": hide_file.save(d["items"]), "errors": theme_file.apply()},
+            "/api/items/save": save_items,
         }
         if self.path not in actions:
             return self._send(404, "not found", "text/plain")
@@ -107,6 +112,18 @@ def save_theme(d):
         theme_file.apply()
         return {"theme": theme, "errors": errors, "reverted": True}
     return {"theme": theme, "errors": errors, "reverted": False}
+
+
+def save_items(d):
+    """مثل الثيم: إن رفض Shell ملف العناصر نرجع العناصر السابقة ونطبّقها."""
+    previous = items_file.load()
+    items = items_file.save(d["items"])
+    errors = theme_file.apply()
+    if any("ui-items" in e for e in errors):
+        items_file.save(previous)
+        theme_file.apply()
+        return {"items": previous, "errors": errors, "reverted": True}
+    return {"items": items, "errors": errors, "reverted": False}
 
 
 def find_edge():

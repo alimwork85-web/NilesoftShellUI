@@ -65,6 +65,14 @@
   .hrow .pat { flex: 1; unicode-bidi: plaintext; text-align: start; font-family: Consolas, "Segoe UI", monospace; }
   .hrow.off .pat { color: var(--muted); text-decoration: line-through; }
   .hrow button { padding: 2px 10px; font-size: 13px; }
+  .irow { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 8px; cursor: pointer; }
+  .irow:hover { background: var(--bg); }
+  .irow.sel { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .irow .ttl { flex: 1; unicode-bidi: plaintext; text-align: start; }
+  .irow .kind { color: var(--muted); font-size: 12px; min-width: 18px; text-align: center; }
+  .irow .sepline { flex: 1; border-top: 1px dashed var(--line); }
+  .irow button { padding: 1px 8px; font-size: 12px; }
+  .ikids { padding-inline-start: 22px; border-inline-start: 2px solid var(--line); margin-inline-start: 12px; }
   [hidden] { display: none !important; }
 
   /* ---------- المعاينة ---------- */
@@ -204,6 +212,39 @@
         <label class="field"><span data-t="opacity">الشفافية</span><div class="range" data-k="shadow.opacity" data-min="0" data-max="100"></div></label>
       </div></div>
 
+      <div class="card" id="itemscard">
+        <h2 data-t="g_items">عناصري الخاصة</h2>
+        <p class="hint" data-t="itemshint">برامج وأوامر تضيفها إلى قائمة الزر الأيمن، ويمكن جمعها في قوائم فرعية.</p>
+        <div id="unlinkeditems" class="msg warn" data-t="unlinkeditems" hidden>ملف العناصر غير مربوط بـ shell.nss.</div>
+        <div id="itree"></div>
+        <div class="actions" style="margin-top:8px">
+          <button type="button" id="addItem" data-t="additem">+ عنصر</button>
+          <button type="button" id="addMenu" data-t="addmenu">+ قائمة فرعية</button>
+          <button type="button" id="addSep" data-t="addsep">+ فاصل</button>
+          <span class="hint" data-t="addinto">يُضاف داخل القائمة الفرعية المحددة.</span>
+        </div>
+        <div id="ieditor" class="grid" style="margin-top:12px" hidden>
+          <label class="field"><span data-t="ititle">الاسم في القائمة</span><input type="text" data-i="title" style="width:200px"></label>
+          <label class="field" data-only="item"><span data-t="icmd">البرنامج أو الأمر</span><input type="text" data-i="cmd" style="width:200px;direction:ltr" placeholder="C:\Program Files\...\app.exe"></label>
+          <label class="field" data-only="item"><span data-t="iargs">وسائط إضافية</span><input type="text" data-i="args" style="width:200px;direction:ltr"></label>
+          <label class="field" data-only="item"><span data-t="ipass">أرسل مسار الملف المحدد</span><input type="checkbox" data-i="passPath"></label>
+          <label class="field"><span data-t="iimage">أيقونة (اختياري)</span><input type="text" data-i="image" style="width:200px;direction:ltr" placeholder="exe / ico"></label>
+          <label class="field"><span data-t="iwhere">يظهر على</span>
+            <select data-i="where">
+              <option value="all" data-t="w_all">كل مكان</option><option value="file" data-t="w_file">الملفات</option>
+              <option value="dir" data-t="w_dir">المجلدات</option><option value="back" data-t="w_back">خلفية المجلد</option>
+              <option value="desktop" data-t="w_desktop">سطح المكتب</option>
+            </select></label>
+          <label class="field"><span data-t="iexts">امتدادات فقط (اختياري)</span><input type="text" data-i="exts" style="width:200px;direction:ltr" placeholder="py, txt, md"></label>
+          <label class="field"><span data-t="ishift">يظهر مع Shift فقط</span><input type="checkbox" data-i="shift"></label>
+          <label class="field"><span data-t="itop">في أعلى القائمة</span><input type="checkbox" data-i="top"></label>
+          <label class="field" data-only="item"><span data-t="iadmin">تشغيل كمسؤول</span><input type="checkbox" data-i="admin"></label>
+        </div>
+        <div class="actions" style="margin-top:10px">
+          <button type="button" id="saveItems" class="primary" data-t="saveitems">حفظ وتطبيق</button>
+        </div>
+      </div>
+
       <div class="card" id="hidecard">
         <h2 data-t="g_hide">العناصر المخفية من القائمة</h2>
         <p class="hint" data-t="hidehint">اكتب جزءًا من اسم العنصر كما يظهر في القائمة، بين نجمتين: *VLC*. ألغِ العلامة لإظهار العنصر مرة أخرى.</p>
@@ -264,6 +305,14 @@ const T = {
     unlinkedhide: "The hidden-items file is not linked in shell.nss.", addhide: "Add", savehide: "Save & apply",
     hidden: "Hidden", remove: "Remove", hidesaved: "Hidden items saved and applied.", nohide: "No hidden items yet.",
     badpat: "Write the text between stars, without double quotes, e.g. *VLC*",
+    g_items: "My custom items", itemshint: "Programs and commands you add to the right-click menu, optionally grouped in submenus.",
+    unlinkeditems: "The items file is not linked in shell.nss.", additem: "+ Item", addmenu: "+ Submenu", addsep: "+ Separator",
+    addinto: "Added inside the selected submenu.", ititle: "Title in the menu", icmd: "Program or command", iargs: "Extra arguments",
+    ipass: "Pass the selected file's path", iimage: "Icon (optional)", iwhere: "Shows on", w_all: "Everywhere", w_file: "Files",
+    w_dir: "Folders", w_back: "Folder background", w_desktop: "Desktop", iexts: "Only these extensions (optional)",
+    ishift: "Only with Shift", itop: "At the top of the menu", iadmin: "Run as administrator", saveitems: "Save & apply",
+    itemssaved: "Your items were saved and applied.", noitems: "No items yet. Add one below.", newitem: "New item",
+    newmenu: "New submenu", itemsbad: "Shell rejected the items file, so the previous items were restored: ",
     flavor: "Flavor", accent: "Accent", latte: "Latte (light)", mocha: "Mocha (dark)",
     ctpapply: "Use this theme", ctphint: "Then press “Save & apply”.",
     r0: "None", r1: "Small", r2: "Medium", r3: "Large", r4: "Full",
@@ -274,7 +323,9 @@ const AR = { r0: "بدون", r1: "صغير", r2: "متوسط", r3: "كبير", r
   restarting: "جارٍ التطبيق… يُعاد تشغيل Explorer", badfile: "رفض Shell ملف الثيم، فأرجعت النسخة السابقة: ",
   otherr: "طُبّق، لكن Shell سجّل خطأ في ملف آخر: ", applied: "أُعيد تشغيل Explorer.",
   hidden: "مخفي", remove: "حذف", hidesaved: "حُفظت العناصر المخفية وطُبّقت.", nohide: "لا توجد عناصر مخفية بعد.",
-  badpat: "اكتب النص بين نجمتين ودون علامات تنصيص، مثل *VLC*" };
+  badpat: "اكتب النص بين نجمتين ودون علامات تنصيص، مثل *VLC*",
+  itemssaved: "حُفظت عناصرك وطُبّقت.", noitems: "لا توجد عناصر بعد. أضف واحدًا من الأسفل.", newitem: "عنصر جديد",
+  newmenu: "قائمة فرعية جديدة", itemsbad: "رفض Shell ملف العناصر، فأرجعت العناصر السابقة: " };
 
 let lang = "ar";
 try { lang = localStorage.getItem("lang") || "ar"; } catch (e) {}
@@ -518,6 +569,94 @@ document.getElementById("ctpApply").onclick = () => {
 };
 ctpF.value = "mocha"; ctpRender();
 
+// ---------- عناصري الخاصة ----------
+let myItems = [], selPath = null;  // selPath: مصفوفة مواقع، مثل [2, 0] = العنصر الأول داخل القائمة الثالثة
+function nodeAt(path) {
+  let list = myItems, node = null;
+  path.forEach((i, d) => { node = list[i]; if (d < path.length - 1) list = node.children; });
+  return node;
+}
+function listOf(path) { return path.length === 1 ? myItems : nodeAt(path.slice(0, -1)).children; }
+function renderItems() {
+  const box = document.getElementById("itree");
+  box.innerHTML = "";
+  if (!myItems.length) box.innerHTML = `<p class="hint">${tr("noitems")}</p>`;
+  const draw = (list, base, parent) => list.forEach((it, i) => {
+    const path = base.concat(i);
+    const row = document.createElement("div");
+    row.className = "irow" + (selPath && selPath.join() === path.join() ? " sel" : "");
+    const kind = it.type === "menu" ? "▸" : it.type === "sep" ? "—" : "•";
+    row.innerHTML = `<span class="kind">${kind}</span>` +
+      (it.type === "sep" ? '<span class="sepline"></span>' : '<span class="ttl"></span>') +
+      '<button type="button" data-a="up">↑</button><button type="button" data-a="down">↓</button><button type="button" data-a="del">✕</button>';
+    if (it.type !== "sep") row.querySelector(".ttl").textContent = it.title || "…";
+    row.onclick = (e) => {
+      const a = e.target.dataset && e.target.dataset.a;
+      const l = listOf(path);
+      if (a === "up" && i > 0) { [l[i - 1], l[i]] = [l[i], l[i - 1]]; selPath = base.concat(i - 1); }
+      else if (a === "down" && i < l.length - 1) { [l[i + 1], l[i]] = [l[i], l[i + 1]]; selPath = base.concat(i + 1); }
+      else if (a === "del") { l.splice(i, 1); selPath = null; }
+      else if (!a) selPath = path;
+      renderItems();
+    };
+    parent.appendChild(row);
+    if (it.type === "menu") {
+      const kids = document.createElement("div");
+      kids.className = "ikids";
+      parent.appendChild(kids);
+      draw(it.children || (it.children = []), path, kids);
+    }
+  });
+  draw(myItems, [], box);
+  fillEditor();
+}
+function addNode(node) {
+  const sel = selPath && nodeAt(selPath);
+  const target = sel && sel.type === "menu" ? sel.children : selPath && selPath.length > 1 ? listOf(selPath) : myItems;
+  target.push(node);
+  // نحدد العنصر الجديد ليُعدَّل مباشرة
+  const findPath = (list, base) => { for (let i = 0; i < list.length; i++) {
+    if (list[i] === node) return base.concat(i);
+    if (list[i].children) { const p = findPath(list[i].children, base.concat(i)); if (p) return p; } } return null; };
+  selPath = findPath(myItems, []);
+  renderItems();
+}
+document.getElementById("addItem").onclick = () => addNode({ type: "item", title: tr("newitem"), cmd: "", where: "all", passPath: true });
+document.getElementById("addMenu").onclick = () => addNode({ type: "menu", title: tr("newmenu"), where: "all", children: [] });
+document.getElementById("addSep").onclick = () => addNode({ type: "sep" });
+function fillEditor() {
+  const ed = document.getElementById("ieditor");
+  const it = selPath && nodeAt(selPath);
+  ed.hidden = !it || it.type === "sep";
+  if (ed.hidden) return;
+  ed.querySelectorAll("[data-only]").forEach((el) => (el.hidden = el.dataset.only !== it.type));
+  ed.querySelectorAll("[data-i]").forEach((el) => {
+    const v = it[el.dataset.i];
+    if (el.type === "checkbox") el.checked = !!v; else el.value = v == null ? (el.tagName === "SELECT" ? "all" : "") : v;
+  });
+}
+document.querySelectorAll("#ieditor [data-i]").forEach((el) => {
+  const upd = () => {
+    const it = selPath && nodeAt(selPath);
+    if (!it) return;
+    it[el.dataset.i] = el.type === "checkbox" ? el.checked : el.value;
+    if (el.dataset.i === "title") { const r = document.querySelector(".irow.sel .ttl"); if (r) r.textContent = el.value || "…"; }
+  };
+  el.oninput = upd; el.onchange = upd;
+});
+document.getElementById("saveItems").onclick = () => busy(async () => {
+  const r = await api("/api/items/save", { items: myItems });
+  if (r.ok) { myItems = r.items; selPath = null; renderItems(); }
+  if (r.ok && r.reverted) return msg(tr("itemsbad") + r.errors[0], "err");
+  report(r, tr("itemssaved"));
+});
+async function loadItems() {
+  const r = await api("/api/items");
+  if (!r.ok) return msg(r.error, "err");
+  myItems = r.items; renderItems();
+  document.getElementById("unlinkeditems").hidden = r.linked;
+}
+
 // ---------- العناصر المخفية ----------
 let hideItems = [];
 function renderHide() {
@@ -558,6 +697,7 @@ setInterval(() => api("/api/ping").catch(() => {}), 2000);
 applyLang();
 load();
 loadHide();
+loadItems();
 </script>
 </body>
 </html>
