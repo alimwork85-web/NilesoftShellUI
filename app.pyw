@@ -54,8 +54,8 @@ class Handler(BaseHTTPRequestHandler):
             with open(os.path.join(HERE, "index.html"), encoding="utf-8") as f:
                 html = f.read().replace("__TOKEN__", TOKEN)
             self._send(200, html, "text/html; charset=utf-8")
-        elif self.path == "/presets.js":
-            with open(os.path.join(HERE, "presets.js"), encoding="utf-8") as f:
+        elif self.path in ("/presets.js", "/catppuccin.js"):
+            with open(os.path.join(HERE, self.path[1:]), encoding="utf-8") as f:
                 self._send(200, f.read(), "text/javascript; charset=utf-8")
         elif self.path == "/api/theme" and self._allowed():
             self._run(lambda d: {"theme": theme_file.load(), "linked": theme_file.is_linked(),

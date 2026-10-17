@@ -123,6 +123,25 @@
         <div id="presets" class="presets"></div>
       </div>
 
+      <div class="card">
+        <h2>Catppuccin</h2>
+        <div class="grid">
+          <label class="field"><span data-t="flavor">النكهة</span>
+            <select id="ctpFlavor">
+              <option value="latte" data-t="latte">Latte (فاتح)</option>
+              <option value="frappe">Frappé</option>
+              <option value="macchiato">Macchiato</option>
+              <option value="mocha" data-t="mocha">Mocha (داكن)</option>
+            </select></label>
+          <label class="field"><span data-t="accent">اللون</span><select id="ctpAccent"></select></label>
+        </div>
+        <div class="actions" style="margin-top:10px">
+          <span id="ctpSwatch" class="sw"></span>
+          <button type="button" id="ctpApply" data-t="ctpapply">استخدم هذا الثيم</button>
+          <span class="hint" data-t="ctphint">ثم اضغط «حفظ وتطبيق».</span>
+        </div>
+      </div>
+
       <div class="card"><h2 data-t="g_bg">الخلفية</h2><div class="grid">
         <label class="field"><span data-t="color">اللون</span><div class="color" data-k="background.color"></div></label>
         <label class="field"><span data-t="opacity">الشفافية</span><div class="range" data-k="background.opacity" data-min="0" data-max="100"></div></label>
@@ -216,6 +235,7 @@
 </main>
 
 <script src="/presets.js"></script>
+<script src="/catppuccin.js"></script>
 <script>
 const TOKEN = "__TOKEN__";
 const T = {
@@ -244,6 +264,8 @@ const T = {
     unlinkedhide: "The hidden-items file is not linked in shell.nss.", addhide: "Add", savehide: "Save & apply",
     hidden: "Hidden", remove: "Remove", hidesaved: "Hidden items saved and applied.", nohide: "No hidden items yet.",
     badpat: "Write the text between stars, without double quotes, e.g. *VLC*",
+    flavor: "Flavor", accent: "Accent", latte: "Latte (light)", mocha: "Mocha (dark)",
+    ctpapply: "Use this theme", ctphint: "Then press “Save & apply”.",
     r0: "None", r1: "Small", r2: "Medium", r3: "Large", r4: "Full",
   },
 };
@@ -472,6 +494,29 @@ document.getElementById("undo").onclick = () => busy(async () => {
 document.getElementById("restart").onclick = () => busy(async () => {
   report(await api("/api/restart", {}), tr("applied"));
 });
+
+// ---------- Catppuccin: نكهة + لون ----------
+const ctpF = document.getElementById("ctpFlavor"), ctpA = document.getElementById("ctpAccent");
+function ctpTheme() { return CATPPUCCIN[ctpF.value][ctpA.value]; }
+function ctpRender() {
+  const keep = ctpA.value || "mauve";
+  ctpA.innerHTML = Object.keys(CATPPUCCIN[ctpF.value]).sort()
+    .map((a) => `<option value="${a}">${a[0].toUpperCase() + a.slice(1)}</option>`).join("");
+  ctpA.value = CATPPUCCIN[ctpF.value][keep] ? keep : "mauve";
+  ctpSwatchUpdate();
+}
+function ctpSwatchUpdate() {
+  const t = ctpTheme();
+  document.getElementById("ctpSwatch").innerHTML = [t.background.color, t.item.back.select, t.border.color, t.item.text.normal]
+    .map((c) => `<i style="background:${c}"></i>`).join("");
+}
+ctpF.onchange = ctpRender;
+ctpA.onchange = ctpSwatchUpdate;
+document.getElementById("ctpApply").onclick = () => {
+  theme = JSON.parse(JSON.stringify(ctpTheme()));
+  fillControls(); changed();
+};
+ctpF.value = "mocha"; ctpRender();
 
 // ---------- العناصر المخفية ----------
 let hideItems = [];
