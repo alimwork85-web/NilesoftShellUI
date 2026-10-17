@@ -55,6 +55,9 @@ class Handler(BaseHTTPRequestHandler):
             with open(os.path.join(HERE, "index.html"), encoding="utf-8") as f:
                 html = f.read().replace("__TOKEN__", TOKEN)
             self._send(200, html, "text/html; charset=utf-8")
+        elif self.path == "/icon.png":
+            with open(os.path.join(HERE, "assets", "app-256.png"), "rb") as f:
+                self._send(200, f.read(), "image/png")
         elif self.path in ("/presets.js", "/catppuccin.js"):
             with open(os.path.join(HERE, self.path[1:]), encoding="utf-8") as f:
                 self._send(200, f.read(), "text/javascript; charset=utf-8")
