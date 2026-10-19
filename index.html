@@ -123,6 +123,10 @@
     </div>
   </div>
   <div id="msg" class="msg" hidden></div>
+  <div id="setupbox" class="msg warn" hidden>
+    <span data-t="setuphint">يحتاج التطبيق إعدادًا لمرة واحدة حتى يستطيع تعديل قائمة الزر الأيمن. ستظهر نافذة صلاحية المسؤول، وتُحفظ نسخة من shell.nss باسم shell.nss.bak.</span>
+    <button type="button" id="setupbtn" class="primary" data-t="setupbtn">إعداد الآن</button>
+  </div>
   <div id="unlinked" class="msg warn" data-t="unlinked" hidden>ملف الثيم غير مربوط بـ shell.nss، فلن يظهر أي تغيير في القائمة.</div>
 
   <div class="layout">
@@ -327,6 +331,8 @@ const T = {
     g_menus: "Shell's ready menus", menushint: "Untick to hide a menu from the right-click menu, tick to show it.",
     unlinkedmenus: "The menus file is not linked in shell.nss.", savemenus: "Save & apply", shown: "Shown",
     menussaved: "Menus saved and applied.", menusbad: "Shell rejected the menus file, so the previous state was restored: ",
+    setuphint: "The app needs a one-time setup before it can change the right-click menu. An administrator prompt will appear, and shell.nss is backed up as shell.nss.bak.",
+    setupbtn: "Set up now", setupdone: "Setup finished.",
     newmenu: "New submenu", itemsbad: "Shell rejected the items file, so the previous items were restored: ",
     flavor: "Flavor", accent: "Accent", latte: "Latte (light)", mocha: "Mocha (dark)",
     ctpapply: "Use this theme", ctphint: "Then press “Save & apply”.",
@@ -340,7 +346,7 @@ const AR = { r0: "بدون", r1: "صغير", r2: "متوسط", r3: "كبير", r
   hidden: "مخفي", remove: "حذف", hidesaved: "حُفظت العناصر المخفية وطُبّقت.", nohide: "لا توجد عناصر مخفية بعد.",
   badpat: "اكتب النص بين نجمتين ودون علامات تنصيص، مثل *VLC*",
   itemssaved: "حُفظت عناصرك وطُبّقت.", noitems: "لا توجد عناصر بعد. أضف واحدًا من الأسفل.", newitem: "عنصر جديد",
-  shown: "ظاهرة", menussaved: "حُفظت القوائم وطُبّقت.", menusbad: "رفض Shell ملف القوائم، فأرجعت الحالة السابقة: ",
+  setupdone: "اكتمل الإعداد.", shown: "ظاهرة", menussaved: "حُفظت القوائم وطُبّقت.", menusbad: "رفض Shell ملف القوائم، فأرجعت الحالة السابقة: ",
   newmenu: "قائمة فرعية جديدة", itemsbad: "رفض Shell ملف العناصر، فأرجعت العناصر السابقة: " };
 
 let lang = "ar";
@@ -743,12 +749,24 @@ async function loadMenus() {
   document.getElementById("unlinkedmenus").hidden = r.linked;
 }
 
+// ---------- إعداد أول مرة ----------
+async function loadSetup() {
+  const r = await api("/api/setup");
+  document.getElementById("setupbox").hidden = !(r.ok && r.needed);
+}
+document.getElementById("setupbtn").onclick = () => busy(async () => {
+  const r = await api("/api/setup/run", {});
+  report(r, tr("setupdone"));
+  if (r.ok) { loadSetup(); load(); loadHide(); loadItems(); loadMenus(); }
+});
+
 setInterval(() => api("/api/ping").catch(() => {}), 2000);
 applyLang();
 load();
 loadHide();
 loadItems();
 loadMenus();
+loadSetup();
 </script>
 </body>
 </html>

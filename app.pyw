@@ -21,6 +21,7 @@ import theme_file  # noqa: E402
 import hide_file  # noqa: E402
 import items_file  # noqa: E402
 import menus_file  # noqa: E402
+import setup_shell  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TOKEN = secrets.token_hex(16)
@@ -71,6 +72,8 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == "/api/items" and self._allowed():
             self._run(lambda d: {"items": items_file.load(), "linked": items_file.is_linked(),
                                  "file": items_file.ITEMS_FILE})
+        elif self.path == "/api/setup" and self._allowed():
+            self._run(lambda d: {"needed": setup_shell.needed()})
         elif self.path == "/api/menus" and self._allowed():
             self._run(lambda d: {"menus": menus_file.load(), "linked": menus_file.is_linked(),
                                  "file": menus_file.MENUS_FILE})
@@ -93,6 +96,7 @@ class Handler(BaseHTTPRequestHandler):
             "/api/hide/save": lambda d: {"items": hide_file.save(d["items"]), "errors": theme_file.apply()},
             "/api/items/save": save_items,
             "/api/menus/save": save_menus,
+            "/api/setup/run": lambda d: (setup_shell.run(), {"errors": theme_file.apply()})[1],
         }
         if self.path not in actions:
             return self._send(404, "not found", "text/plain")
