@@ -518,6 +518,8 @@ function applyLang() {
   document.title = lang === "en" ? "Menu Theme" : "ثيم القائمة";
   document.getElementById("lang").textContent = lang === "en" ? "العربية" : "English";
   renderPresets();
+  // القوائم المبنية بالكود تحمل نصوصًا مترجمة، فتُعاد بعد تبديل اللغة
+  renderItems(); renderHide(); renderMenus();
 }
 document.getElementById("lang").onclick = () => {
   lang = lang === "en" ? "ar" : "en";
@@ -710,9 +712,10 @@ async function loadHide() {
 }
 
 // ---------- قوائم Shell الجاهزة ----------
-// الأسماء كما تظهر في القائمة نفسها
-const MENU_NAMES = { pin: "Pin/Unpin", more: "More options", terminal: "Terminal", "file-manage": "File manage",
-  develop: "Develop", goto: "Go to", taskbar: "Taskbar" };
+// [عربي، الاسم كما يظهر في القائمة نفسها]
+const MENU_NAMES = { pin: ["تثبيت/إلغاء التثبيت", "Pin/Unpin"], more: ["خيارات إضافية", "More options"],
+  terminal: ["الطرفية", "Terminal"], "file-manage": ["إدارة الملفات", "File manage"], develop: ["التطوير", "Develop"],
+  goto: ["انتقال إلى", "Go to"], taskbar: ["شريط المهام", "Taskbar"] };
 let shellMenus = {};
 function renderMenus() {
   const box = document.getElementById("menuslist");
@@ -721,7 +724,8 @@ function renderMenus() {
     const row = document.createElement("label");
     row.className = "hrow" + (shellMenus[k] ? "" : " off");
     row.innerHTML = `<input type="checkbox" ${shellMenus[k] ? "checked" : ""}><span class="hint">${tr("shown")}</span><span class="pat"></span>`;
-    row.querySelector(".pat").textContent = MENU_NAMES[k];
+    const [ar, en] = MENU_NAMES[k];
+    row.querySelector(".pat").textContent = lang === "en" ? en : `${ar} (${en})`;
     row.querySelector("input").onchange = (e) => { shellMenus[k] = e.target.checked; renderMenus(); };
     box.appendChild(row);
   });
