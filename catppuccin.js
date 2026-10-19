@@ -1,4 +1,5 @@
-// ثيمات Catppuccin لـ Nilesoft Shell، منقولة من github.com/catppuccin/nilesoft-shell (MIT)
+// ثيمات Catppuccin لـ Nilesoft Shell، منقولة من github.com/catppuccin/nilesoft-shell
+// Copyright (c) 2021 Catppuccin - MIT License
 // مع إضافة واحدة: item.back.normal-disabled = color.transparent
 const CATPPUCCIN = {
  "latte": {

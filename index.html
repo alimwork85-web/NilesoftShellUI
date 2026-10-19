@@ -54,6 +54,7 @@
   button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
   button:disabled { opacity: .5; cursor: default; }
   .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .hint a { color: inherit; }
   .msg { border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 14px; }
   .msg.ok { background: var(--ok-bg); color: var(--ok); }
   .msg.err { background: var(--err-bg); color: var(--danger); }
@@ -138,6 +139,9 @@
 
       <div class="card">
         <h2>Catppuccin</h2>
+        <p class="hint"><span data-t="ctpcredit">هذه الثيمات من مشروع</span>
+          <a href="https://github.com/catppuccin/nilesoft-shell" target="_blank" rel="noopener" dir="ltr">catppuccin/nilesoft-shell</a>
+          <span data-t="ctplicense">برخصة MIT، مع الشكر لفريق Catppuccin.</span></p>
         <div class="grid">
           <label class="field"><span data-t="flavor">النكهة</span>
             <select id="ctpFlavor">
@@ -332,6 +336,7 @@ const T = {
     unlinkedmenus: "The menus file is not linked in shell.nss.", savemenus: "Save & apply", shown: "Shown",
     menussaved: "Menus saved and applied.", menusbad: "Shell rejected the menus file, so the previous state was restored: ",
     setuphint: "The app needs a one-time setup before it can change the right-click menu. An administrator prompt will appear, and shell.nss is backed up as shell.nss.bak.",
+    ctpcredit: "These themes come from", ctplicense: "under the MIT License, with thanks to the Catppuccin team.",
     setupbtn: "Set up now", setupdone: "Setup finished.",
     newmenu: "New submenu", itemsbad: "Shell rejected the items file, so the previous items were restored: ",
     flavor: "Flavor", accent: "Accent", latte: "Latte (light)", mocha: "Mocha (dark)",
