@@ -139,7 +139,8 @@ def save_menus(d):
     previous = menus_file.load()
     menus = menus_file.save(d["menus"])
     errors = theme_file.apply()
-    if any("ui-menus" in e for e in errors):
+    # أخطاء الاستيراد تذكر اسم الملف المستورد لا ui-menus
+    if any("ui-menus" in e or any(f"{k}.nss" in e for k in menus_file.MENUS) for e in errors):
         menus_file.save(previous)
         theme_file.apply()
         return {"menus": previous, "errors": errors, "reverted": True}
