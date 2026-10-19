@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import theme_file  # noqa: E402
 import hide_file  # noqa: E402
 import items_file  # noqa: E402
+import menus_file  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TOKEN = secrets.token_hex(16)
@@ -70,6 +71,9 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == "/api/items" and self._allowed():
             self._run(lambda d: {"items": items_file.load(), "linked": items_file.is_linked(),
                                  "file": items_file.ITEMS_FILE})
+        elif self.path == "/api/menus" and self._allowed():
+            self._run(lambda d: {"menus": menus_file.load(), "linked": menus_file.is_linked(),
+                                 "file": menus_file.MENUS_FILE})
         elif self.path.startswith("/api/errors?since=") and self._allowed():
             since = float(self.path.split("=", 1)[1] or 0)
             self._json(200, {"ok": True, "errors": theme_file.recent_errors(since)})
@@ -88,6 +92,7 @@ class Handler(BaseHTTPRequestHandler):
             "/api/restart": lambda d: {"errors": theme_file.apply()},
             "/api/hide/save": lambda d: {"items": hide_file.save(d["items"]), "errors": theme_file.apply()},
             "/api/items/save": save_items,
+            "/api/menus/save": save_menus,
         }
         if self.path not in actions:
             return self._send(404, "not found", "text/plain")
@@ -127,6 +132,18 @@ def save_items(d):
         theme_file.apply()
         return {"items": previous, "errors": errors, "reverted": True}
     return {"items": items, "errors": errors, "reverted": False}
+
+
+def save_menus(d):
+    """مثل العناصر: إن رفض Shell ملف القوائم نرجع الحالة السابقة ونطبّقها."""
+    previous = menus_file.load()
+    menus = menus_file.save(d["menus"])
+    errors = theme_file.apply()
+    if any("ui-menus" in e for e in errors):
+        menus_file.save(previous)
+        theme_file.apply()
+        return {"menus": previous, "errors": errors, "reverted": True}
+    return {"menus": menus, "errors": errors, "reverted": False}
 
 
 def find_edge():

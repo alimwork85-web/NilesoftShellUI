@@ -247,6 +247,16 @@
         </div>
       </div>
 
+      <div class="card" id="menuscard">
+        <h2 data-t="g_menus">قوائم Shell الجاهزة</h2>
+        <p class="hint" data-t="menushint">ألغِ العلامة لإخفاء القائمة من الزر الأيمن، وضعها لإظهارها.</p>
+        <div id="unlinkedmenus" class="msg warn" data-t="unlinkedmenus" hidden>ملف القوائم غير مربوط بـ shell.nss.</div>
+        <div id="menuslist"></div>
+        <div class="actions" style="margin-top:10px">
+          <button type="button" id="savemenus" class="primary" data-t="savemenus">حفظ وتطبيق</button>
+        </div>
+      </div>
+
       <div class="card" id="hidecard">
         <h2 data-t="g_hide">العناصر المخفية من القائمة</h2>
         <p class="hint" data-t="hidehint">اكتب جزءًا من اسم العنصر كما يظهر في القائمة، بين نجمتين: *VLC*. ألغِ العلامة لإظهار العنصر مرة أخرى.</p>
@@ -314,6 +324,9 @@ const T = {
     w_dir: "Folders", w_folder: "Folders and inside them", w_back: "Folder background", w_desktop: "Desktop", iexts: "Only these extensions (optional)",
     ishift: "Only with Shift", itop: "At the top of the menu", iadmin: "Run as administrator", saveitems: "Save & apply",
     itemssaved: "Your items were saved and applied.", noitems: "No items yet. Add one below.", newitem: "New item",
+    g_menus: "Shell's ready menus", menushint: "Untick to hide a menu from the right-click menu, tick to show it.",
+    unlinkedmenus: "The menus file is not linked in shell.nss.", savemenus: "Save & apply", shown: "Shown",
+    menussaved: "Menus saved and applied.", menusbad: "Shell rejected the menus file, so the previous state was restored: ",
     newmenu: "New submenu", itemsbad: "Shell rejected the items file, so the previous items were restored: ",
     flavor: "Flavor", accent: "Accent", latte: "Latte (light)", mocha: "Mocha (dark)",
     ctpapply: "Use this theme", ctphint: "Then press “Save & apply”.",
@@ -327,6 +340,7 @@ const AR = { r0: "بدون", r1: "صغير", r2: "متوسط", r3: "كبير", r
   hidden: "مخفي", remove: "حذف", hidesaved: "حُفظت العناصر المخفية وطُبّقت.", nohide: "لا توجد عناصر مخفية بعد.",
   badpat: "اكتب النص بين نجمتين ودون علامات تنصيص، مثل *VLC*",
   itemssaved: "حُفظت عناصرك وطُبّقت.", noitems: "لا توجد عناصر بعد. أضف واحدًا من الأسفل.", newitem: "عنصر جديد",
+  shown: "ظاهرة", menussaved: "حُفظت القوائم وطُبّقت.", menusbad: "رفض Shell ملف القوائم، فأرجعت الحالة السابقة: ",
   newmenu: "قائمة فرعية جديدة", itemsbad: "رفض Shell ملف العناصر، فأرجعت العناصر السابقة: " };
 
 let lang = "ar";
@@ -695,11 +709,42 @@ async function loadHide() {
   document.getElementById("unlinkedhide").hidden = r.linked;
 }
 
+// ---------- قوائم Shell الجاهزة ----------
+// الأسماء كما تظهر في القائمة نفسها
+const MENU_NAMES = { pin: "Pin/Unpin", more: "More options", terminal: "Terminal", "file-manage": "File manage",
+  develop: "Develop", goto: "Go to", taskbar: "Taskbar" };
+let shellMenus = {};
+function renderMenus() {
+  const box = document.getElementById("menuslist");
+  box.innerHTML = "";
+  Object.keys(MENU_NAMES).forEach((k) => {
+    const row = document.createElement("label");
+    row.className = "hrow" + (shellMenus[k] ? "" : " off");
+    row.innerHTML = `<input type="checkbox" ${shellMenus[k] ? "checked" : ""}><span class="hint">${tr("shown")}</span><span class="pat"></span>`;
+    row.querySelector(".pat").textContent = MENU_NAMES[k];
+    row.querySelector("input").onchange = (e) => { shellMenus[k] = e.target.checked; renderMenus(); };
+    box.appendChild(row);
+  });
+}
+document.getElementById("savemenus").onclick = () => busy(async () => {
+  const r = await api("/api/menus/save", { menus: shellMenus });
+  if (r.ok) { shellMenus = r.menus; renderMenus(); }
+  if (r.ok && r.reverted) return msg(tr("menusbad") + r.errors[0], "err");
+  report(r, tr("menussaved"));
+});
+async function loadMenus() {
+  const r = await api("/api/menus");
+  if (!r.ok) return msg(r.error, "err");
+  shellMenus = r.menus; renderMenus();
+  document.getElementById("unlinkedmenus").hidden = r.linked;
+}
+
 setInterval(() => api("/api/ping").catch(() => {}), 2000);
 applyLang();
 load();
 loadHide();
 loadItems();
+loadMenus();
 </script>
 </body>
 </html>
