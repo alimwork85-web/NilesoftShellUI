@@ -501,7 +501,10 @@ function renderPreview() {
     vars["--bgc"] = `linear-gradient(${deg}deg, ${grad.stop.map((st) => `${st[1]} ${Number(st[0]) * 100}%`).join(", ")})`;
   }
   Object.entries(vars).forEach(([k, v]) => s.setProperty(k, String(v)));
-  st.innerHTML = menuHtml(MAIN, "") + menuHtml(SUB, "sub");
+  // عناصري الخاصة الحقيقية مكان Develop النموذجي؛ & في Shell علامة اختصار لا تُعرض
+  const esc = (t) => String(t || "").replace(/&(?!&)/g, "").replace(/[<>"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const mine = myItems.map((it) => it.type === "sep" ? "-" : [it.type === "menu" ? "dev" : null, esc(it.title), it.type === "menu" ? ">" : ""]);
+  st.innerHTML = menuHtml(MAIN.flatMap((it) => it[0] === "dev" ? mine : [it]), "") + menuHtml(SUB, "sub");
   if (g("image.enabled", true) === false) st.querySelectorAll(".pv .ic:not(.sym)").forEach((e) => (e.style.visibility = "hidden"));
 }
 
@@ -638,6 +641,7 @@ function renderItems() {
   });
   draw(myItems, [], box);
   fillEditor();
+  renderPreview();
 }
 function addNode(node) {
   const sel = selPath && nodeAt(selPath);
