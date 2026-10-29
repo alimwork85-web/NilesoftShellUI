@@ -136,9 +136,15 @@ def _node(it, depth):
     raise AppError(f"نوع غير معروف: {kind}", f"Unknown type: {kind}")
 
 
+def _shown(items):
+    """العناصر المخفية تبقى في items.json ولا تُكتب في ملف Shell."""
+    return [dict(it, children=_shown(it["children"])) if it.get("children") else it
+            for it in items if not it.get("hidden")]
+
+
 def build(items):
     lines = [HEADER]
-    for it in items:
+    for it in _shown(items):
         lines += _node(it, 0)
     return "\n".join(lines) + "\n"
 
