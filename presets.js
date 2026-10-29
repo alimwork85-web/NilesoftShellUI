@@ -87,6 +87,36 @@ const PRESETS = [
     theme: makeTheme("nord", {
       bg: "#2E3440", text: "#ECEFF4", dis: "#616E88", sel: "#434C5E",
       border: "#88C0D0", sep: "#3B4252", sym: "#81A1C1", accent: "#88C0D0" }) },
+  // من ألوان الثيمات الرسمية (كلها MIT): Tokyo Night وGruvbox وKanagawa وEverforest وRosé Pine وOne Dark
+  { id: "tokyo-night", ar: "Tokyo Night", en: "Tokyo Night",
+    theme: makeTheme("tokyo-night", {
+      bg: "#1A1B26", text: "#C0CAF5", dis: "#565F89", sel: "#283457",
+      border: "#7AA2F7", sep: "#292E42", sym: "#BB9AF7", accent: "#7AA2F7" }) },
+  { id: "gruvbox", ar: "Gruvbox", en: "Gruvbox",
+    theme: makeTheme("gruvbox", {
+      bg: "#282828", text: "#EBDBB2", dis: "#928374", sel: "#504945",
+      border: "#FABD2F", sep: "#3C3836", sym: "#FE8019", accent: "#FABD2F" }) },
+  { id: "kanagawa", ar: "Kanagawa", en: "Kanagawa",
+    theme: makeTheme("kanagawa", {
+      bg: "#1F1F28", text: "#DCD7BA", dis: "#727169", sel: "#2D4F67",
+      border: "#7E9CD8", sep: "#2A2A37", sym: "#957FB8", accent: "#7E9CD8" }) },
+  { id: "everforest", ar: "Everforest", en: "Everforest",
+    theme: makeTheme("everforest", {
+      bg: "#2D353B", text: "#D3C6AA", dis: "#859289", sel: "#475258",
+      border: "#A7C080", sep: "#343F44", sym: "#A7C080", accent: "#A7C080" }) },
+  { id: "rose-pine", ar: "Rosé Pine", en: "Rosé Pine",
+    theme: makeTheme("rose-pine", {
+      bg: "#191724", text: "#E0DEF4", dis: "#6E6A86", sel: "#403D52",
+      border: "#C4A7E7", sep: "#26233A", sym: "#EBBCBA", accent: "#C4A7E7" }) },
+  { id: "rose-pine-dawn", ar: "Rosé Pine Dawn (فاتح)", en: "Rosé Pine Dawn (light)",
+    theme: makeTheme("rose-pine-dawn", {
+      bg: "#FAF4ED", text: "#575279", dis: "#9893A5", sel: "#DFDAD9",
+      border: "#907AA9", sep: "#F2E9E1", sym: "#D7827E", accent: "#907AA9",
+      shadow: "#575279", shadowOp: 10 }) },
+  { id: "one-dark", ar: "One Dark", en: "One Dark",
+    theme: makeTheme("one-dark", {
+      bg: "#282C34", text: "#ABB2BF", dis: "#5C6370", sel: "#3E4451",
+      border: "#61AFEF", sep: "#3B4048", sym: "#C678DD", accent: "#61AFEF" }) },
   { id: "windows-light", ar: "Windows فاتح", en: "Windows light",
     theme: makeTheme("windows-light", {
       bg: "#F9F9F9", text: "#1A1A1A", dis: "#A0A0A0", sel: "#E5E5E5",

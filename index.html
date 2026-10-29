@@ -76,6 +76,7 @@
   .irow .ttl[contenteditable="plaintext-only"] { cursor: text; outline: 1px solid var(--accent); border-radius: 4px; padding: 0 4px; }
   .irow .sepline { flex: 1; border-top: 1px dashed var(--line); }
   .irow button { padding: 1px 8px; font-size: 12px; }
+  #itree.folded .ikids { display: none; }
   .ikids { padding-inline-start: 22px; border-inline-start: 2px solid var(--line); margin-inline-start: 12px; }
   [hidden] { display: none !important; }
 
@@ -225,7 +226,11 @@
       </div></div>
 
       <div class="card" id="itemscard">
-        <h2 data-t="g_items">عناصري الخاصة</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2 data-t="g_items">عناصري الخاصة</h2>
+          <button type="button" id="foldItems" aria-expanded="true"
+            onclick="this.setAttribute('aria-expanded', !document.getElementById('itree').classList.toggle('folded'))" data-t="folditems">طي القوائم</button>
+        </div>
         <p class="hint" data-t="itemshint">برامج وأوامر تضيفها إلى قائمة الزر الأيمن، ويمكن جمعها في قوائم فرعية.</p>
         <div id="unlinkeditems" class="msg warn" data-t="unlinkeditems" hidden>ملف العناصر غير مربوط بـ shell.nss.</div>
         <div id="itree"></div>
@@ -341,7 +346,7 @@ const T = {
     setuphint: "The app needs a one-time setup before it can change the right-click menu. An administrator prompt will appear, and shell.nss is backed up as shell.nss.bak.",
     ctpcredit: "These themes come from", ctplicense: "under the MIT License, with thanks to the Catppuccin team.",
     setupbtn: "Set up now", setupdone: "Setup finished.",
-    fontwarn: "(changing it may break the menu)", inadd: "+ Item", inmenu: "+ Submenu", hideit: "Hide", showit: "Show", renhint: "Double-click to rename",
+    fontwarn: "(changing it may break the menu)", folditems: "Fold menus", inadd: "+ Item", inmenu: "+ Submenu", hideit: "Hide", showit: "Show", renhint: "Double-click to rename",
     delmenu: "Delete this submenu and everything inside it?",
     newmenu: "New submenu", itemsbad: "Shell rejected the items file, so the previous items were restored: ",
     flavor: "Flavor", accent: "Accent", latte: "Latte (light)", mocha: "Mocha (dark)",
