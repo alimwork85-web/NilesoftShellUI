@@ -24,9 +24,9 @@ An easy English/Arabic interface for customizing the Windows right-click menu wi
 
 ## Features
 
-- **Theme editor** with a live preview: colors, opacity, effects (blur, acrylic), corners, font and shadow.
-- **Ready themes:** 7 themes including Dracula and Nord, plus 56 Catppuccin themes (4 flavors × 14 accents).
-- **My items:** add programs and commands to the menu, with submenus and separators, and choose where they show (files, folders, desktop...) and for which extensions.
+- **Theme editor** with a live preview that shows your own menu items: colors, opacity, effects (blur, acrylic), corners, font and shadow.
+- **70 ready themes:** Tokyo Night, Gruvbox, Kanagawa, Everforest, Rosé Pine (dark and Dawn), One Dark, Dracula, Nord and more, plus 56 Catppuccin themes (4 flavors × 14 accents).
+- **My items:** add programs and commands to the menu, with submenus and separators, and choose where they show (files, folders, desktop...) and for which extensions. The full tree is shown with submenus: add straight into any submenu, hide an item without deleting it, double-click a name to rename it, and fold all submenus with one button.
 - **Hide Windows items** you don't need from the menu.
 - **Shell's ready menus:** show or hide Terminal, Go to, File manage, Taskbar and more.
 - **One-click setup** on first run.
@@ -36,14 +36,16 @@ An easy English/Arabic interface for customizing the Windows right-click menu wi
 
 - Windows 10 or 11.
 - [Nilesoft Shell](https://nilesoft.org) installed.
-- [Python](https://www.python.org/downloads/) 3.8 or newer. No extra packages needed.
 - Microsoft Edge, which ships with Windows. The app opens in its own Edge window, or in your default browser if Edge is missing.
+- Only if you run from source: [Python](https://www.python.org/downloads/) 3.8 or newer. No extra packages needed.
 
 ## Running
 
-1. Download or clone the repository: `git clone https://github.com/alimwork85-web/NilesoftShellUI`
-2. Double-click `app.pyw`.
-3. On first run a **"Set up now"** bar appears. Click it and accept the administrator prompt.
+**Easiest:** download `NilesoftShellUI.exe` from the [latest release](https://github.com/alimwork85-web/NilesoftShellUI/releases/latest) and double-click it. No install and no Python needed.
+
+**From source:** clone the repository (`git clone https://github.com/alimwork85-web/NilesoftShellUI`) and double-click `app.pyw`.
+
+On first run a **"Set up now"** bar appears. Click it and accept the administrator prompt.
 
 ### What setup does
 
@@ -66,6 +68,7 @@ Everything runs on your machine: a local server on `127.0.0.1`, protected by a r
 ## Credits
 
 - The Catppuccin themes come from [catppuccin/nilesoft-shell](https://github.com/catppuccin/nilesoft-shell) under the MIT License. Thanks to the [Catppuccin](https://github.com/catppuccin) team.
+- The Tokyo Night, Gruvbox, Kanagawa, Everforest, Rosé Pine and One Dark themes are built from the colors of the original MIT-licensed palettes. Thanks to their authors.
 - [Nilesoft Shell](https://nilesoft.org) draws the menu. This app is only an interface for it and is not affiliated with Nilesoft.
 
 ## License
@@ -86,9 +89,9 @@ Everything runs on your machine: a local server on `127.0.0.1`, protected by a r
 
 ## المميزات
 
-- **محرر الثيم** مع معاينة حية: الألوان، والشفافية، والتأثيرات (Blur وAcrylic)، والحواف، والخط، والظل.
-- **ثيمات جاهزة:** 7 ثيمات، منها Dracula وNord، و56 ثيمًا من Catppuccin (4 نكهات × 14 لونًا).
-- **عناصري الخاصة:** أضف برامج وأوامر إلى القائمة، وقوائم فرعية وفواصل، وحدّد أين تظهر (الملفات، المجلدات، سطح المكتب...) ولأي امتدادات.
+- **محرر الثيم** مع معاينة حية تعرض عناصرك الخاصة: الألوان، والشفافية، والتأثيرات (Blur وAcrylic)، والحواف، والخط، والظل.
+- **70 ثيمًا جاهزًا:** Tokyo Night وGruvbox وKanagawa وEverforest وRosé Pine (داكن وDawn) وOne Dark وDracula وNord وغيرها، و56 ثيمًا من Catppuccin (4 نكهات × 14 لونًا).
+- **عناصري الخاصة:** أضف برامج وأوامر إلى القائمة، وقوائم فرعية وفواصل، وحدّد أين تظهر (الملفات، المجلدات، سطح المكتب...) ولأي امتدادات. تظهر الشجرة كاملة بقوائمها الفرعية: أضف داخل أي قائمة فرعية مباشرة، وأخفِ عنصرًا دون حذفه، وانقر مرتين على الاسم لتغييره، واطوِ كل القوائم الفرعية بزر واحد.
 - **إخفاء عناصر Windows** التي لا تحتاجها من القائمة.
 - **قوائم Shell الجاهزة:** أظهر أو أخفِ Terminal وGo to وFile manage وTaskbar وغيرها.
 - **إعداد بنقرة واحدة** عند أول تشغيل.
@@ -98,14 +101,16 @@ Everything runs on your machine: a local server on `127.0.0.1`, protected by a r
 
 - Windows 10 أو 11.
 - [Nilesoft Shell](https://nilesoft.org) مثبّت.
-- [Python](https://www.python.org/downloads/) 3.8 أو أحدث. لا يحتاج أي حزمة إضافية.
 - متصفح Microsoft Edge، وهو موجود في Windows أصلًا. التطبيق يفتح فيه نافذة مستقلة، وإن لم يجده يفتح في المتصفح الافتراضي.
+- عند التشغيل من الكود فقط: [Python](https://www.python.org/downloads/) 3.8 أو أحدث. لا يحتاج أي حزمة إضافية.
 
 ## التشغيل
 
-1. نزّل المستودع أو انسخه: `git clone https://github.com/alimwork85-web/NilesoftShellUI`
-2. انقر نقرتين على `app.pyw`.
-3. في أول تشغيل يظهر شريط **«إعداد الآن»**. اضغطه ووافق على نافذة صلاحية المسؤول.
+**الأسهل:** نزّل `NilesoftShellUI.exe` من [آخر إصدار](https://github.com/alimwork85-web/NilesoftShellUI/releases/latest) وانقر عليه نقرتين. لا يحتاج تثبيتًا ولا Python.
+
+**من الكود:** انسخ المستودع (`git clone https://github.com/alimwork85-web/NilesoftShellUI`) وانقر نقرتين على `app.pyw`.
+
+في أول تشغيل يظهر شريط **«إعداد الآن»**. اضغطه ووافق على نافذة صلاحية المسؤول.
 
 ### ماذا يفعل الإعداد؟
 
@@ -128,6 +133,7 @@ Everything runs on your machine: a local server on `127.0.0.1`, protected by a r
 ## شكر وتقدير
 
 - ثيمات Catppuccin مأخوذة من مشروع [catppuccin/nilesoft-shell](https://github.com/catppuccin/nilesoft-shell) برخصة MIT. شكرًا لفريق [Catppuccin](https://github.com/catppuccin).
+- ثيمات Tokyo Night وGruvbox وKanagawa وEverforest وRosé Pine وOne Dark مبنية من ألوان مجموعاتها الأصلية المرخّصة بـ MIT. شكرًا لأصحابها.
 - [Nilesoft Shell](https://nilesoft.org) هو البرنامج الذي يرسم القائمة. هذا التطبيق واجهة له فقط، وليس تابعًا لـ Nilesoft.
 
 ## الرخصة
