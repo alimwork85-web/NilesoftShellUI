@@ -346,6 +346,8 @@ const T = {
     setuphint: "The app needs a one-time setup before it can change the right-click menu. An administrator prompt will appear, and shell.nss is backed up as shell.nss.bak.",
     ctpcredit: "These themes come from", ctplicense: "under the MIT License, with thanks to the Catppuccin team.",
     setupbtn: "Set up now", setupdone: "Setup finished.",
+    itemsnotloaded: "Your items could not be loaded, so saving is blocked. Close the app and open it again.",
+    fewer: "The list now has {b} items, but {a} were loaded. Save anyway and delete the rest from the menu?",
     fontwarn: "(changing it may break the menu)", folditems: "Fold menus", inadd: "+ Item", inmenu: "+ Submenu", hideit: "Hide", showit: "Show", renhint: "Double-click to rename",
     delmenu: "Delete this submenu and everything inside it?",
     newmenu: "New submenu", itemsbad: "Shell rejected the items file, so the previous items were restored: ",
@@ -362,6 +364,8 @@ const AR = { r0: "بدون", r1: "صغير", r2: "متوسط", r3: "كبير", r
   badpat: "اكتب النص بين نجمتين ودون علامات تنصيص، مثل *VLC*",
   itemssaved: "حُفظت عناصرك وطُبّقت.", noitems: "لا توجد عناصر بعد. أضف واحدًا من الأسفل.", newitem: "عنصر جديد",
   setupdone: "اكتمل الإعداد.", shown: "ظاهرة", menussaved: "حُفظت القوائم وطُبّقت.", menusbad: "رفض Shell ملف القوائم، فأرجعت الحالة السابقة: ",
+  itemsnotloaded: "تعذّر تحميل عناصرك، فالحفظ معطّل. أغلق التطبيق وافتحه من جديد.",
+  fewer: "في القائمة الآن {b} عنصرًا، وكان المحمَّل {a}. هل تحفظ وتحذف الباقي من القائمة؟",
   inadd: "+ عنصر", inmenu: "+ قائمة", hideit: "إخفاء", showit: "إظهار", renhint: "انقر مرتين لتغيير الاسم",
   delmenu: "حذف هذه القائمة الفرعية وكل ما بداخلها؟",
   newmenu: "قائمة فرعية جديدة", itemsbad: "رفض Shell ملف العناصر، فأرجعت العناصر السابقة: " };
@@ -705,16 +709,26 @@ document.querySelectorAll("#ieditor [data-i]").forEach((el) => {
   };
   el.oninput = upd; el.onchange = upd;
 });
-document.getElementById("saveItems").onclick = () => busy(async () => {
+// حماية: لا حفظ إن فشل التحميل، وسؤال قبل حفظ عناصر أقل مما حُمِّل (حدث أن ظهرت القائمة فارغة)
+let loadedCount = null;
+const countItems = (list) => list.reduce((n, it) => n + 1 + countItems(it.children || []), 0);
+document.getElementById("saveItems").onclick = () => {
+  if (loadedCount === null) return msg(tr("itemsnotloaded"), "err");
+  const now = countItems(myItems);
+  if (now < loadedCount && !confirm(tr("fewer").replace("{a}", loadedCount).replace("{b}", now))) return;
+  saveItemsNow();
+};
+const saveItemsNow = () => busy(async () => {
   const r = await api("/api/items/save", { items: myItems });
-  if (r.ok) { myItems = r.items; selPath = null; renderItems(); }
+  if (r.ok) { myItems = r.items; selPath = null; renderItems(); loadedCount = countItems(myItems); }
   if (r.ok && r.reverted) return msg(tr("itemsbad") + r.errors[0], "err");
   report(r, tr("itemssaved"));
 });
 async function loadItems() {
-  const r = await api("/api/items");
-  if (!r.ok) return msg(r.error, "err");
-  myItems = r.items; renderItems();
+  let r;
+  try { r = await api("/api/items"); } catch (e) { r = { ok: false, error: String(e) }; }
+  if (!r.ok) return msg(tr("itemsnotloaded") + " " + r.error, "err");
+  myItems = r.items; loadedCount = countItems(myItems); renderItems();
   document.getElementById("unlinkeditems").hidden = r.linked;
 }
 
