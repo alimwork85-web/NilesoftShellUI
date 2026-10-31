@@ -227,10 +227,11 @@ def main():
         import webbrowser
         webbrowser.open(url)
 
-    # الواجهة ترسل نبضة كل ثانيتين، فإذا أُغلقت النافذة يتوقف البرنامج وحده
+    # الواجهة ترسل نبضة كل ثانيتين، فإذا أُغلقت النافذة يتوقف البرنامج وحده.
+    # Edge يبطئ المؤقتات في النافذة المصغّرة، فما دامت النافذة موجودة لا نتوقف
     global last_ping
     last_ping = time.time() + 20  # مهلة لفتح النافذة أول مرة
-    while time.time() - last_ping < 8:
+    while time.time() - last_ping < 8 or find_window():
         time.sleep(1)
     server.shutdown()
 

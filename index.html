@@ -327,7 +327,7 @@ const T = {
     save: "Save & apply", undo: "Undo last save", restart: "Restart Explorer",
     restarthint: "Saving restarts Explorer automatically, because Shell only reads its settings when Explorer starts. The taskbar disappears for a few seconds.",
     saved: "Saved and applied. Right-click anywhere to see it.", undone: "Previous version restored and applied.",
-    restarting: "Applying… restarting Explorer", badfile: "Shell rejected the theme file, so the previous version was restored: ",
+    restarting: "Applying… restarting Explorer", lost: "Lost connection to the program. Close this window and open the app again.",badfile: "Shell rejected the theme file, so the previous version was restored: ",
     otherr: "Applied, but Shell reported an error in another file: ", applied: "Explorer restarted.",
     g_hide: "Hidden menu items", hidehint: "Type part of the item's name as it appears in the menu, between stars: *VLC*. Untick to show the item again.",
     unlinkedhide: "The hidden-items file is not linked in shell.nss.", addhide: "Add", savehide: "Save & apply",
@@ -358,7 +358,7 @@ const T = {
 };
 const AR = { r0: "بدون", r1: "صغير", r2: "متوسط", r3: "كبير", r4: "كامل",
   saved: "تم الحفظ والتطبيق. اضغط بالزر الأيمن في أي مكان لترى الشكل الجديد.", undone: "رجعت النسخة السابقة وطُبّقت.",
-  restarting: "جارٍ التطبيق… يُعاد تشغيل Explorer", badfile: "رفض Shell ملف الثيم، فأرجعت النسخة السابقة: ",
+  restarting: "جارٍ التطبيق… يُعاد تشغيل Explorer", lost: "انقطع الاتصال بالبرنامج. أغلق هذه النافذة وافتح التطبيق من جديد.",badfile: "رفض Shell ملف الثيم، فأرجعت النسخة السابقة: ",
   otherr: "طُبّق، لكن Shell سجّل خطأ في ملف آخر: ", applied: "أُعيد تشغيل Explorer.",
   hidden: "مخفي", remove: "حذف", hidesaved: "حُفظت العناصر المخفية وطُبّقت.", nohide: "لا توجد عناصر مخفية بعد.",
   badpat: "اكتب النص بين نجمتين ودون علامات تنصيص، مثل *VLC*",
@@ -537,7 +537,8 @@ function msg(text, kind) {
 async function api(path, body) {
   const opt = { method: body === undefined ? "GET" : "POST", headers: { "X-Token": TOKEN, "X-Lang": lang } };
   if (body !== undefined) { opt.body = JSON.stringify(body); opt.headers["Content-Type"] = "application/json"; }
-  return (await fetch(path, opt)).json();
+  try { return await (await fetch(path, opt)).json(); }
+  catch (e) { return { ok: false, error: tr("lost") }; }  // البرنامج توقف والنافذة بقيت
 }
 function applyLang() {
   document.documentElement.lang = lang; document.documentElement.dir = lang === "en" ? "ltr" : "rtl";
