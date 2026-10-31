@@ -47,6 +47,8 @@ An easy English/Arabic interface for customizing the Windows right-click menu wi
 
 On first run a **"Set up now"** bar appears. Click it and accept the administrator prompt.
 
+The program keeps running while its window is open, even minimized, and exits when you close the window. If a "Lost connection to the program" message ever appears, close the window and open the app again.
+
 ### What setup does
 
 Shell's folder in `Program Files` needs administrator rights to write, so setup asks for them once. Then it:
@@ -111,6 +113,8 @@ Everything runs on your machine: a local server on `127.0.0.1`, protected by a r
 **من الكود:** انسخ المستودع (`git clone https://github.com/alimwork85-web/NilesoftShellUI`) وانقر نقرتين على `app.pyw`.
 
 في أول تشغيل يظهر شريط **«إعداد الآن»**. اضغطه ووافق على نافذة صلاحية المسؤول.
+
+يبقى البرنامج يعمل ما دامت نافذته مفتوحة ولو كانت مصغّرة، ويتوقف عند إغلاقها. إن ظهرت رسالة «انقطع الاتصال بالبرنامج» فأغلق النافذة وافتح التطبيق من جديد.
 
 ### ماذا يفعل الإعداد؟
 
