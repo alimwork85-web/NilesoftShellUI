@@ -1,0 +1,49 @@
+# Builds NilesoftShellUI.exe on GitHub and attaches it to the release, so every download is built from the published code.
+# Runs when a release is published (write its notes first, then publish), or by hand for an existing tag.
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to build and attach (e.g. v1.1.1)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $v = $env:TAG.TrimStart('v')
+          python -m pip install pyinstaller==6.22.3
+          # Same command as build.ps1, with this runner's python instead of the py launcher.
+          python -m PyInstaller --noconfirm --clean --onefile --windowed --name NilesoftShellUI `
+            --icon assets\app.ico --version-file version_info.txt `
+            --add-data "index.html;." --add-data "presets.js;." --add-data "catppuccin.js;." `
+            --add-data "assets\app-256.png;assets" app.pyw
+          if ($LASTEXITCODE) { throw "PyInstaller failed" }
+          # The file's version must match the tag, or version_info.txt was not bumped.
+          $file = (Get-Item dist\NilesoftShellUI.exe).VersionInfo.ProductVersion
+          if ($file -ne $v) { throw "version_info.txt says $file, the tag says $v" }
+
+      - name: Attach to the release
+        shell: pwsh
+        run: gh release upload $env:TAG dist\NilesoftShellUI.exe --clobber
